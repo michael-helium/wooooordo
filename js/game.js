@@ -1,11 +1,7 @@
 // js/game.js
 let wordSet;
-import { loadDictionary } from './dictionary.js';
 
 async function initGame() {
-  DICT = await loadDictionary();   // ⬅️ Load and cache in memory
-  const date = todayKey();
-  playedKey = `wooooordo.played.${date}`;
     wordSet = await loadDictionary();
     const lettersContainer = document.getElementById('letters-container');
     const wordForm = document.getElementById('word-form');
