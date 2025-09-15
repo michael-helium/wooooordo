@@ -1,8 +1,9 @@
 // js/stats.js
-// Updated to recalculate accurately on load (unchanged otherwise)
 document.addEventListener('DOMContentLoaded', () => {
-    const gamesPlayed = document.getElementById('games-played');
-    const lifetimePoints = document.getElementById('lifetime-points');
+    const gamesPlayedEl = document.getElementById('games-played');
+    const lifetimePointsEl = document.getElementById('lifetime-points');
+    const averageScoreEl = document.getElementById('average-score');
+    const currentStreakEl = document.getElementById('current-streak');
     const highScores = document.getElementById('high-scores');
 
     const stats = JSON.parse(localStorage.getItem('game_stats')) || {
@@ -11,30 +12,46 @@ document.addEventListener('DOMContentLoaded', () => {
         highScores: []
     };
 
-    const playedDays = Object.keys(localStorage)
-        .filter(k => k.startsWith('game_'))
-        .map(k => {
-            const data = JSON.parse(localStorage.getItem(k));
-            return data.words.length > 0 ? 1 : 0;
-        })
-        .reduce((a, b) => a + b, 0);
-    stats.gamesPlayed = playedDays;
+    // Recalculate accurately
+    const gameKeys = Object.keys(localStorage).filter(k => k.startsWith('game_'));
+    const playedData = gameKeys.map(k => {
+        const data = JSON.parse(localStorage.getItem(k));
+        return { date: k.split('_')[1], played: data.words.length > 0, total: data.total };
+    }).filter(d => d.played);
 
-    stats.lifetimePoints = Object.keys(localStorage)
-        .filter(k => k.startsWith('game_'))
-        .reduce((total, k) => {
-            const data = JSON.parse(localStorage.getItem(k));
-            return total + data.total;
-        }, 0);
+    stats.gamesPlayed = playedData.length;
+    stats.lifetimePoints = playedData.reduce((sum, d) => sum + d.total, 0);
+
+    // Average
+    const average = stats.gamesPlayed > 0 ? (stats.lifetimePoints / stats.gamesPlayed).toFixed(2) : 0;
+
+    // Current streak
+    const sortedDates = playedData.map(d => d.date).sort();
+    let streak = 0;
+    if (sortedDates.length > 0) {
+        let current = 1;
+        for (let i = 1; i < sortedDates.length; i++) {
+            const prev = new Date(sortedDates[i-1]);
+            const curr = new Date(sortedDates[i]);
+            if ((curr - prev) / (1000 * 60 * 60 * 24) === 1) {
+                current++;
+            } else {
+                current = 1;
+            }
+            streak = Math.max(streak, current);
+        }
+    }
 
     localStorage.setItem('game_stats', JSON.stringify(stats));
 
-    gamesPlayed.textContent = `Total Games Played: ${stats.gamesPlayed}`;
-    lifetimePoints.textContent = `Lifetime Points: ${stats.lifetimePoints}`;
+    gamesPlayedEl.textContent = `Total Games Played: ${stats.gamesPlayed}`;
+    lifetimePointsEl.textContent = `Lifetime Points: ${stats.lifetimePoints}`;
+    averageScoreEl.textContent = `Average Score: ${average}`;
+    currentStreakEl.textContent = `Current Streak: ${streak} days`;
 
-    stats.highScores.forEach(({ word, score }) => {
+    stats.highScores.forEach(({ word, score, date }) => {
         const li = document.createElement('li');
-        li.textContent = `${word.toUpperCase()}: ${score} points`;
+        li.textContent = `${word.toUpperCase()}: ${score} points (${date})`;
         highScores.appendChild(li);
     });
 });
