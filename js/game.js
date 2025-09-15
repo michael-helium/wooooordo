@@ -9,9 +9,10 @@ async function initGame() {
     const errorMessage = document.getElementById('error-message');
     const wordList = document.getElementById('word-list');
     const dailyTotal = document.getElementById('daily-total');
+    const shareButton = document.getElementById('share-button');
 
     const today = getTodayDate();
-    let dailyData = JSON.parse(localStorage.getItem(`game_${today}`)) || { words: [], total: 0 };
+    let dailyData = JSON.parse(localStorage.getItem(`game_${today}`)) || { words: [], total: 0, attempts: 0 };
     const letters = generateDailyLetters();
     const lettersSet = new Set(letters);
 
@@ -27,18 +28,36 @@ async function initGame() {
     dailyData.words.forEach(({ word, score }) => addWordToList(word, score));
     updateTotal(dailyData.total);
 
+    // Check if max attempts reached
+    if (dailyData.attempts >= 10) {
+        disableForm();
+    }
+
     wordForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        dailyData.attempts++;
+        saveDailyData(today, dailyData);
+
         const word = wordInput.value.trim().toLowerCase();
         errorMessage.textContent = '';
 
+        if (dailyData.attempts > 10) {
+            errorMessage.textContent = 'Max 10 guesses reached for today.';
+            disableForm();
+            return;
+        }
+
         if (!isValidWord(word, lettersSet, wordSet)) {
             errorMessage.textContent = 'Invalid word: Must be 3+ letters, use only given letters, and be a valid English word.';
+            wordInput.value = '';
             return;
         }
 
         if (dailyData.words.some(w => w.word === word)) {
             errorMessage.textContent = 'Word already submitted today.';
+            dailyData.attempts--; // Don't count duplicates as attempt? Or do—up to you; here, count all.
+            saveDailyData(today, dailyData);
+            wordInput.value = '';
             return;
         }
 
@@ -48,37 +67,59 @@ async function initGame() {
         addWordToList(word, score);
         updateTotal(dailyData.total);
         saveDailyData(today, dailyData);
-        updateStats(dailyData);
+        updateStats(dailyData, today);
         wordInput.value = '';
+    });
+
+    shareButton.addEventListener('click', () => {
+        const [year, month, day] = today.split('-');
+        const shortYear = year.slice(2);
+        const text = `wooooordo ${month}/${day}/${shortYear}: ${dailyData.total} points`;
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Score copied to clipboard!');
+        });
     });
 
     function addWordToList(word, score) {
         const li = document.createElement('li');
         li.textContent = `${word.toUpperCase()}: ${score} points`;
+        li.classList.add('new-word');
         wordList.appendChild(li);
     }
 
     function updateTotal(total) {
         dailyTotal.textContent = `Daily Total: ${total}`;
     }
+
+    function disableForm() {
+        wordInput.disabled = true;
+        wordForm.querySelector('button').disabled = true;
+        errorMessage.textContent = 'Max 10 guesses reached for today.';
+    }
 }
 
 async function loadDictionary() {
-    const url = 'https://raw.githubusercontent.com/scrabblewords/scrabblewords/main/words/North-American/NWL2020.txt';
+    const DICT_KEY = 'wooooordo_dict';
+    let dict = localStorage.getItem(DICT_KEY);
+    if (dict) {
+        return new Set(JSON.parse(dict));
+    }
+    const url = 'https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt';
     const response = await fetch(url);
     const text = await response.text();
     const words = text.split('\n').map(w => w.trim().toLowerCase()).filter(w => w.length >= 3);
-    return new Set(words);
+    const wordSet = new Set(words);
+    localStorage.setItem(DICT_KEY, JSON.stringify([...wordSet]));
+    return wordSet;
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
 
-// Other functions unchanged (saveDailyData, updateStats)
 function saveDailyData(date, data) {
     localStorage.setItem(`game_${date}`, JSON.stringify(data));
 }
 
-function updateStats(dailyData) {
+function updateStats(dailyData, today) {
     let stats = JSON.parse(localStorage.getItem('game_stats')) || {
         gamesPlayed: 0,
         lifetimePoints: 0,
@@ -92,7 +133,7 @@ function updateStats(dailyData) {
 
     stats.lifetimePoints += dailyData.words[dailyData.words.length - 1].score;
 
-    stats.highScores.push(...dailyData.words.slice(-1));
+    stats.highScores.push({ ...dailyData.words.slice(-1)[0], date: today });
     stats.highScores.sort((a, b) => b.score - a.score);
     stats.highScores = stats.highScores.slice(0, 10);
 
