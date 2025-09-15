@@ -1,5 +1,5 @@
 // js/utils.js
-const FORCE_LETTERS = null; // e.g. ['x','y','z','x','x'] for testing
+const FORCE_LETTERS = ['a','e','r','l','n']; // e.g. ['x','y','z','x','x'] for testing or = null for live.
 
 
 function getTodayDate() {
