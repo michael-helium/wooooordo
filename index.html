@@ -1,0 +1,32 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wooooordo</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>wooooordo</h1>
+        <p>Use as few letters as possible to create long words. Score: 10 × (length - unique letters). Maximize your daily total!</p>
+    </header>
+    <main>
+        <div id="letters-container" class="letters"></div>
+        <form id="word-form">
+            <input type="text" id="word-input" placeholder="Enter word" autocomplete="off" minlength="3" required>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="error-message" class="error"></div>
+        <ul id="word-list"></ul>
+        <div id="daily-total">Daily Total: 0</div>
+    </main>
+    <footer>
+        <a href="stats.html">View Stats</a>
+    </footer>
+    <script src="js/utils.js"></script>
+    <script src="js/dictionary.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
