@@ -1,4 +1,7 @@
 // js/utils.js
+const FORCE_LETTERS = null; // e.g. ['x','y','z','x','x'] for testing
+
+
 function getTodayDate() {
     return '2025-09-15'; // Mock; remove for production: return new Date().toISOString().split('T')[0];
 }
@@ -19,6 +22,7 @@ function getDailySeed() {
 }
 
 function generateDailyLetters() {
+    if (FORCE_LETTERS) return FORCE_LETTERS;
     const rand = seededRandom(getDailySeed());
     const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
     const vowels = new Set('aeiou');
