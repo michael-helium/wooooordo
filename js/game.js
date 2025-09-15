@@ -1,5 +1,6 @@
 // js/game.js
 let wordSet;
+import { loadDictionary } from './dictionary.js';
 
 async function initGame() {
     wordSet = await loadDictionary();
