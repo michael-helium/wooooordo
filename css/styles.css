@@ -1,0 +1,94 @@
+/* css/styles.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 1rem;
+    background-color: #f4f4f4;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+header, main, footer {
+    margin-bottom: 1rem;
+}
+
+.letters {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.letter {
+    width: 50px;
+    height: 50px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+form {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    text-transform: lowercase;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.error {
+    color: red;
+    margin-bottom: 1rem;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    background-color: #fff;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+}
+
+#daily-total {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+@media (min-width: 768px) {
+    .letter {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+}
