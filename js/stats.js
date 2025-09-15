@@ -1,45 +1,57 @@
-// stats.js
-const STATS_KEY = 'wooooordo.stats.v1';
+// js/stats.js
+document.addEventListener('DOMContentLoaded', () => {
+    const gamesPlayedEl = document.getElementById('games-played');
+    const lifetimePointsEl = document.getElementById('lifetime-points');
+    const averageScoreEl = document.getElementById('average-score');
+    const currentStreakEl = document.getElementById('current-streak');
+    const highScores = document.getElementById('high-scores');
 
-export function loadStats() {
-  const raw = localStorage.getItem(STATS_KEY);
-  return raw ? JSON.parse(raw) : {
-    totalGames: 0,
-    lifetimePoints: 0,
-    bestWords: [], // {word, score, date}
-    history: []    // {date, points}
-  };
-}
+    const stats = JSON.parse(localStorage.getItem('game_stats')) || {
+        gamesPlayed: 0,
+        lifetimePoints: 0,
+        highScores: []
+    };
 
-export function saveStats(stats) {
-  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
-}
+    // Recalculate accurately
+    const gameKeys = Object.keys(localStorage).filter(k => k.startsWith('game_'));
+    const playedData = gameKeys.map(k => {
+        const data = JSON.parse(localStorage.getItem(k));
+        return { date: k.split('_')[1], played: data.words.length > 0, total: data.total };
+    }).filter(d => d.played);
 
-export function recordGameResult({ date, points, bestWord }) {
-  const stats = loadStats();
-  stats.totalGames += 1;
-  stats.lifetimePoints += points;
-  stats.history.push({ date, points });
+    stats.gamesPlayed = playedData.length;
+    stats.lifetimePoints = playedData.reduce((sum, d) => sum + d.total, 0);
 
-  if (bestWord) {
-    stats.bestWords.push({ word: bestWord.word, score: bestWord.score, date });
-    // keep only top 20 by score
-    stats.bestWords.sort((a,b) => b.score - a.score);
-    stats.bestWords = stats.bestWords.slice(0, 20);
-  }
-  saveStats(stats);
-}
+    // Average
+    const average = stats.gamesPlayed > 0 ? (stats.lifetimePoints / stats.gamesPlayed).toFixed(2) : 0;
 
-export function renderStatsPage() {
-  const s = loadStats();
-  const el = (id) => document.getElementById(id);
+    // Current streak
+    const sortedDates = playedData.map(d => d.date).sort();
+    let streak = 0;
+    if (sortedDates.length > 0) {
+        let current = 1;
+        for (let i = 1; i < sortedDates.length; i++) {
+            const prev = new Date(sortedDates[i-1]);
+            const curr = new Date(sortedDates[i]);
+            if ((curr - prev) / (1000 * 60 * 60 * 24) === 1) {
+                current++;
+            } else {
+                current = 1;
+            }
+            streak = Math.max(streak, current);
+        }
+    }
 
-  if (el('totalGames')) el('totalGames').textContent = s.totalGames.toString();
-  if (el('lifetimePoints')) el('lifetimePoints').textContent = s.lifetimePoints.toString();
+    localStorage.setItem('game_stats', JSON.stringify(stats));
 
-  if (el('bestWords')) {
-    el('bestWords').innerHTML = s.bestWords
-      .map(({word, score, date}) => `<li><strong>${word}</strong> — ${score} pts <small>${date}</small></li>`)
-      .join('');
-  }
-}
+    gamesPlayedEl.textContent = `Total Games Played: ${stats.gamesPlayed}`;
+    lifetimePointsEl.textContent = `Lifetime Points: ${stats.lifetimePoints}`;
+    averageScoreEl.textContent = `Average Score: ${average}`;
+    currentStreakEl.textContent = `Current Streak: ${streak} days`;
+
+    stats.highScores.forEach(({ word, score, date }) => {
+        const li = document.createElement('li');
+        li.textContent = `${word.toUpperCase()}: ${score} points (${date})`;
+        highScores.appendChild(li);
+    });
+});
