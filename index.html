@@ -6,11 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wooooordo</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
     <header>
         <h1>wooooordo</h1>
-        <p>Use as few letters as possible to create long words. Score: 10 × (length - unique letters). Maximize your daily total!</p>
+        <p>Use the 5 letters to form 3+ letter English words. Score: 10 × (length - unique letters). Maximize your daily total! (Max 10 guesses)</p>
     </header>
     <main>
         <div id="letters-container" class="letters"></div>
@@ -21,12 +22,17 @@
         <div id="error-message" class="error"></div>
         <ul id="word-list"></ul>
         <div id="daily-total">Daily Total: 0</div>
+        <button id="share-button">Share Score</button>
     </main>
     <footer>
         <a href="stats.html">View Stats</a>
     </footer>
     <script src="js/utils.js"></script>
-    <script src="js/dictionary.js"></script>
     <script src="js/game.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js');
+        }
+    </script>
 </body>
 </html>
