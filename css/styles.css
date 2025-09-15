@@ -75,9 +75,28 @@ li {
     border: 1px solid #ccc;
 }
 
+.new-word {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 #daily-total {
     font-size: 1.2rem;
     font-weight: bold;
+}
+
+#share-button {
+    margin-top: 1rem;
+    background-color: #28a745;
+    color: white;
+}
+
+#share-button:hover {
+    background-color: #218838;
 }
 
 a {
