@@ -1,8 +1,10 @@
 // js/game.js
 let wordSet;
+let isPracticeMode = false;
 
 async function initGame() {
     wordSet = await loadDictionary();
+    const header = document.getElementById('game-header');
     const lettersContainer = document.getElementById('letters-container');
     const wordForm = document.getElementById('word-form');
     const wordInput = document.getElementById('word-input');
@@ -10,19 +12,24 @@ async function initGame() {
     const wordList = document.getElementById('word-list');
     const dailyTotal = document.getElementById('daily-total');
     const shareButton = document.getElementById('share-button');
+    const replayButton = document.getElementById('replay-button');
 
     const today = getTodayDate();
     let dailyData = JSON.parse(localStorage.getItem(`game_${today}`)) || { words: [], total: 0, attempts: 0 };
-    const letters = generateDailyLetters();
-    const lettersSet = new Set(letters);
+    let letters = generateDailyLetters();
+    let lettersSet = new Set(letters);
 
-    // Display letters
-    letters.forEach(letter => {
-        const div = document.createElement('div');
-        div.classList.add('letter');
-        div.textContent = letter.toUpperCase();
-        lettersContainer.appendChild(div);
-    });
+    function displayLetters() {
+        lettersContainer.innerHTML = '';
+        letters.forEach(letter => {
+            const div = document.createElement('div');
+            div.classList.add('letter');
+            div.textContent = letter.toUpperCase();
+            lettersContainer.appendChild(div);
+        });
+    }
+
+    displayLetters();
 
     // Display existing words
     dailyData.words.forEach(({ word, score }) => addWordToList(word, score));
@@ -36,13 +43,13 @@ async function initGame() {
     wordForm.addEventListener('submit', (e) => {
         e.preventDefault();
         dailyData.attempts++;
-        saveDailyData(today, dailyData);
+        if (!isPracticeMode) saveDailyData(today, dailyData);
 
         const word = wordInput.value.trim().toLowerCase();
         errorMessage.textContent = '';
 
         if (dailyData.attempts > 10) {
-            errorMessage.textContent = 'Max 10 guesses reached for today.';
+            errorMessage.textContent = 'Max 10 guesses reached.';
             disableForm();
             return;
         }
@@ -54,9 +61,9 @@ async function initGame() {
         }
 
         if (dailyData.words.some(w => w.word === word)) {
-            errorMessage.textContent = 'Word already submitted today.';
-            dailyData.attempts--; // Don't count duplicates as attempt? Or do—up to you; here, count all.
-            saveDailyData(today, dailyData);
+            errorMessage.textContent = 'Word already submitted.';
+            dailyData.attempts--; // Count all attempts
+            if (!isPracticeMode) saveDailyData(today, dailyData);
             wordInput.value = '';
             return;
         }
@@ -66,8 +73,10 @@ async function initGame() {
         dailyData.total += score;
         addWordToList(word, score);
         updateTotal(dailyData.total);
-        saveDailyData(today, dailyData);
-        updateStats(dailyData, today);
+        if (!isPracticeMode) {
+            saveDailyData(today, dailyData);
+            updateStats(dailyData, today);
+        }
         wordInput.value = '';
     });
 
@@ -78,6 +87,21 @@ async function initGame() {
         navigator.clipboard.writeText(text).then(() => {
             alert('Score copied to clipboard!');
         });
+    });
+
+    replayButton.addEventListener('click', () => {
+        isPracticeMode = true;
+        header.querySelector('p').textContent = 'Practice Mode: Form the longest words you can using as few letters as possible. Score: 10 × (length - unique letters). (Scores not saved)';
+        dailyData = { words: [], total: 0, attempts: 0 };
+        letters = generateRandomLetters();
+        lettersSet = new Set(letters);
+        displayLetters();
+        wordList.innerHTML = '';
+        updateTotal(0);
+        errorMessage.textContent = '';
+        wordInput.disabled = false;
+        wordForm.querySelector('button').disabled = false;
+        wordInput.focus();
     });
 
     function addWordToList(word, score) {
@@ -94,7 +118,7 @@ async function initGame() {
     function disableForm() {
         wordInput.disabled = true;
         wordForm.querySelector('button').disabled = true;
-        errorMessage.textContent = 'Max 10 guesses reached for today.';
+        errorMessage.textContent = 'Max 10 guesses reached.';
     }
 }
 
