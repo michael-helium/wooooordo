@@ -1,9 +1,6 @@
 // js/utils.js
-const FORCE_LETTERS = ['a','e','r','l','n']; // e.g. ['x','y','z','x','x'] for testing or = null for live.
-
-
 function getTodayDate() {
-  return new Date().toISOString().split('T')[0];
+    return new Date().toISOString().split('T')[0];
 }
 
 function seededRandom(seed) {
@@ -22,11 +19,18 @@ function getDailySeed() {
 }
 
 function generateDailyLetters() {
-    if (FORCE_LETTERS) return FORCE_LETTERS;
     const rand = seededRandom(getDailySeed());
+    return generateLetters(rand);
+}
+
+function generateRandomLetters() {
+    const rand = () => Math.random();
+    return generateLetters(rand);
+}
+
+function generateLetters(randFunc) {
     const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
     const vowels = new Set('aeiou');
-    // Frequencies from English letter freq (approx % * 100 for weights)
     const frequencies = {
         a: 812, b: 149, c: 271, d: 432, e: 1202, f: 230, g: 203, h: 592, i: 731, j: 10, k: 69, l: 398, m: 261,
         n: 695, o: 768, p: 182, q: 11, r: 602, s: 628, t: 910, u: 288, v: 111, w: 209, x: 17, y: 211, z: 7
@@ -34,13 +38,13 @@ function generateDailyLetters() {
     const totalWeight = Object.values(frequencies).reduce((sum, w) => sum + w, 0);
 
     function weightedRandomLetter() {
-        const r = rand() * totalWeight;
+        const r = randFunc() * totalWeight;
         let sum = 0;
         for (let i = 0; i < alphabet.length; i++) {
             sum += frequencies[alphabet[i]];
             if (r <= sum) return alphabet[i];
         }
-        return alphabet[alphabet.length - 1]; // Fallback
+        return alphabet[alphabet.length - 1];
     }
 
     let letters, vowelCount;
