@@ -2,7 +2,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <button id="devReset" hidden>Reset Today (dev)</button>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wooooordo</title>
@@ -10,7 +9,7 @@
     <link rel="manifest" href="/manifest.json">
 </head>
 <body>
-    <header>
+    <header id="game-header">
         <h1>wooooordo</h1>
         <p>Form the longest words you can using as few letters as possible. Score: 10 × (length - unique letters). Maximize your daily total! (Max 10 guesses)</p>
     </header>
@@ -24,6 +23,7 @@
         <ul id="word-list"></ul>
         <div id="daily-total">Daily Total: 0</div>
         <button id="share-button">Share Score</button>
+        <button id="replay-button">Replay with New Letters</button>
     </main>
     <footer>
         <a href="stats.html">View Stats</a>
