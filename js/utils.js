@@ -3,7 +3,7 @@ const FORCE_LETTERS = ['a','e','r','l','n']; // e.g. ['x','y','z','x','x'] for t
 
 
 function getTodayDate() {
-    return '2025-09-15'; // Mock; remove for production: return new Date().toISOString().split('T')[0];
+  //  return '2025-09-15'; // Mock; remove for production: return new Date().toISOString().split('T')[0];
 }
 
 function seededRandom(seed) {
